@@ -27,7 +27,7 @@ var numbers = map[string]string{
 }
 
 func main() {
-	file := []string{"documents", "calibration.txt"}
+	file := []string{"..", "assets", "calibration.txt"}
 	path := filepath.Join(file...)
 
 	calibrationValue := GetCalibrationResult(path, GetCalibrationValue)

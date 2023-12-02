@@ -18,7 +18,7 @@ type TrebuchetCalibrationTest struct {
 
 func TestTrebuchet(t *testing.T) {
 	calibrationTestWithoutNumericalStrings := TrebuchetCalibrationTest{
-		filepath.Join("documents", "calibration_test_01.txt"),
+		filepath.Join("..", "assets", "calibration_test_01.txt"),
 		[]struct {
 			in   string
 			want int
@@ -33,7 +33,7 @@ func TestTrebuchet(t *testing.T) {
 	}
 
 	calibrationTestWithNumericalStrings := TrebuchetCalibrationTest{
-		filepath.Join("documents", "calibration_test_02.txt"),
+		filepath.Join("..", "assets", "calibration_test_02.txt"),
 		[]struct {
 			in   string
 			want int
