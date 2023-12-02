@@ -28,6 +28,8 @@ func TestCubeConundrum(t *testing.T) {
 					{Red: 1, Green: 2, Blue: 6},
 					{Green: 2},
 				},
+				PowerSet: CubeConundrum.GameSet{Blue: 6, Red: 4, Green: 2},
+				Power:    48,
 			},
 			true,
 		},
@@ -40,6 +42,8 @@ func TestCubeConundrum(t *testing.T) {
 					{Green: 3, Blue: 4, Red: 1},
 					{Green: 1, Blue: 1},
 				},
+				PowerSet: CubeConundrum.GameSet{Blue: 4, Red: 1, Green: 3},
+				Power:    12,
 			},
 			true,
 		},
@@ -52,6 +56,8 @@ func TestCubeConundrum(t *testing.T) {
 					{Blue: 5, Red: 4, Green: 13},
 					{Green: 5, Red: 1},
 				},
+				PowerSet: CubeConundrum.GameSet{Blue: 6, Red: 20, Green: 13},
+				Power:    1560,
 			},
 			false,
 		},
@@ -64,6 +70,8 @@ func TestCubeConundrum(t *testing.T) {
 					{Green: 3, Red: 6},
 					{Green: 3, Blue: 15, Red: 14},
 				},
+				PowerSet: CubeConundrum.GameSet{Blue: 15, Red: 14, Green: 3},
+				Power:    630,
 			},
 			false,
 		},
@@ -75,12 +83,15 @@ func TestCubeConundrum(t *testing.T) {
 					{Red: 6, Blue: 1, Green: 3},
 					{Blue: 2, Red: 1, Green: 2},
 				},
+				PowerSet: CubeConundrum.GameSet{Blue: 2, Red: 6, Green: 3},
+				Power:    36,
 			},
 			true,
 		},
 	}
 
 	sumIdGames := 8
+	sumPowerGames := 2286
 
 	t.Run("Parse game sets", func(t *testing.T) {
 		for _, c := range cases {
@@ -94,7 +105,12 @@ func TestCubeConundrum(t *testing.T) {
 				t.Errorf("ParseGameSets(%q): Game sets length\n Got: %q\nWant: %q", c.in, got.GameSets, c.game.GameSets)
 			}
 
+			if got.Power != c.game.Power {
+				t.Errorf("ParseGameSets(%q): Power\n Got: %q\nWant: %q", c.in, got.Power, c.game.Power)
+			}
+
 			assertGameSets(t, got.GameSets, c.game.GameSets)
+			assertPowerSet(t, got.PowerSet, c.game.PowerSet)
 		}
 	})
 
@@ -120,6 +136,19 @@ func TestCubeConundrum(t *testing.T) {
 			t.Errorf("SumIdOfAllPossibleGames(%q): Sum of id\n Got: %v\nWant: %v", games, got, sumIdGames)
 		}
 	})
+
+	t.Run("Calculate the sum of power of all games", func(t *testing.T) {
+		var games []CubeConundrum.Game
+		for _, c := range cases {
+			games = append(games, c.game)
+		}
+
+		got := CubeConundrum.CalculatePowerOfAllGames(games)
+
+		if got != sumPowerGames {
+			t.Errorf("CalculatePowerOfAllGames(%q): Sum of power\n Got: %v\nWant: %v", games, got, sumPowerGames)
+		}
+	})
 }
 
 func assertGameSets(t testing.TB, got, want []CubeConundrum.GameSet) {
@@ -130,4 +159,13 @@ func assertGameSets(t testing.TB, got, want []CubeConundrum.GameSet) {
 			t.Errorf("GameSets doesn't match\n Got: %q\nWant: %q", got[i], v)
 		}
 	}
+}
+
+func assertPowerSet(t testing.TB, got, want CubeConundrum.GameSet) {
+	t.Helper()
+
+	if got.Blue != want.Blue || got.Green != want.Green || got.Red != want.Red {
+		t.Errorf("GameSets doesn't match\n Got: %q\nWant: %q", got, want)
+	}
+
 }

@@ -13,6 +13,8 @@ import (
 type Game struct {
 	Id       int
 	GameSets []GameSet
+	PowerSet GameSet
+	Power    int
 }
 
 type GameSet struct {
@@ -31,6 +33,9 @@ func main() {
 	bag := Bag{Red: 12, Green: 13, Blue: 14}
 	sumIdGames := SumIdOfAllPossibleGames(games, bag)
 	fmt.Printf("Sum of all possible games: %d\n", sumIdGames)
+
+	powerOfAllGames := CalculatePowerOfAllGames(games)
+	fmt.Printf("Sum of power of all games: %d\n", powerOfAllGames)
 }
 
 func ReadFile[T any](file string, fn func(string) T) ([]T, error) {
@@ -62,6 +67,7 @@ func ParseGameSets(gameLog string) Game {
 		log.Fatalf("Error converting game id to int:\nGame: %q\nError: %v", gameLog, err)
 	}
 
+	powerSet := GameSet{Red: 1, Green: 1, Blue: 1}
 	var gameSets []GameSet
 	gameSetsText := strings.Split(gameData[1], ";")
 	for i, gameSetText := range gameSetsText {
@@ -79,10 +85,19 @@ func ParseGameSets(gameLog string) Game {
 			switch cubeData[1] {
 			case "red":
 				gameSets[i].Red = cubeQuantity
+				if cubeQuantity > powerSet.Red {
+					powerSet.Red = cubeQuantity
+				}
 			case "green":
 				gameSets[i].Green = cubeQuantity
+				if cubeQuantity > powerSet.Green {
+					powerSet.Green = cubeQuantity
+				}
 			case "blue":
 				gameSets[i].Blue = cubeQuantity
+				if cubeQuantity > powerSet.Blue {
+					powerSet.Blue = cubeQuantity
+				}
 			default:
 				log.Fatalf("Error parsing cube color:\nGame: %q\nCube: %q", gameLog, cube)
 			}
@@ -92,6 +107,8 @@ func ParseGameSets(gameLog string) Game {
 	return Game{
 		Id:       id,
 		GameSets: gameSets,
+		PowerSet: powerSet,
+		Power:    powerSet.Red * powerSet.Green * powerSet.Blue,
 	}
 }
 
@@ -112,6 +129,16 @@ func SumIdOfAllPossibleGames(games []Game, bag Bag) int {
 		if CheckIfGameIsPossible(game, bag) {
 			sum += game.Id
 		}
+	}
+
+	return sum
+}
+
+func CalculatePowerOfAllGames(games []Game) int {
+	var sum int
+
+	for _, game := range games {
+		sum += game.Power
 	}
 
 	return sum
