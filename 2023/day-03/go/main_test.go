@@ -72,7 +72,8 @@ func TestGearRatios(t *testing.T) {
 		},
 	}
 
-	result := 4361
+	resultWithoutGearRatioMultiplier := 4361
+	resultWithGearRatioMultiplier := 467835
 
 	t.Run("Get elements in line", func(t *testing.T) {
 		got := struct {
@@ -112,11 +113,19 @@ func TestGearRatios(t *testing.T) {
 		}
 	})
 
-	t.Run("Get sum of all valid numbers", func(t *testing.T) {
-		got := GearRatios.SumAllValidNumbers(symbolsNumbers)
+	t.Run("Get sum of all valid numbers without gear ratio multiplier", func(t *testing.T) {
+		got := GearRatios.SumAllValidNumbers(symbolsNumbers, false)
 
-		if got != result {
-			t.Errorf("Got %d, want %d", got, result)
+		if got != resultWithoutGearRatioMultiplier {
+			t.Errorf("Got %d, want %d", got, resultWithoutGearRatioMultiplier)
+		}
+	})
+
+	t.Run("Get sum of all valid numbers with gear ratio multiplier", func(t *testing.T) {
+		got := GearRatios.SumAllValidNumbers(symbolsNumbers, true)
+
+		if got != resultWithGearRatioMultiplier {
+			t.Errorf("Got %d, want %d", got, resultWithGearRatioMultiplier)
 		}
 	})
 }

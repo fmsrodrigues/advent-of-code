@@ -51,8 +51,11 @@ func main() {
 
 	symbolsNumbers := GetValidedNumbersForSymbols(symbols, numbers)
 
-	sum := SumAllValidNumbers(symbolsNumbers)
-	fmt.Printf("Sum of all valid numbers: %d\n", sum)
+	sumWithoutGearRatioMultiplier := SumAllValidNumbers(symbolsNumbers, false)
+	fmt.Printf("Sum of all valid numbers without gear ratio multiplier: %d\n", sumWithoutGearRatioMultiplier)
+
+	sumWithGearRatioMultiplier := SumAllValidNumbers(symbolsNumbers, true)
+	fmt.Printf("Sum of all valid numbers with gear ratio multiplier: %d\n", sumWithGearRatioMultiplier)
 }
 
 func ReadFile[T any](file string, fn func(string) T) ([]T, error) {
@@ -158,12 +161,18 @@ func GetValidedNumbersForSymbols(symbols []Symbol, numbers []Number) []SymbolNum
 	return symbolsNumbers
 }
 
-func SumAllValidNumbers(symbolsNumers []SymbolNumbers) int {
+func SumAllValidNumbers(symbolsNumers []SymbolNumbers, useGearRatioMultiplier bool) int {
 	sum := 0
 
 	for _, symbolNumbers := range symbolsNumers {
-		for _, number := range symbolNumbers.Numbers {
-			sum += number.Value
+		if useGearRatioMultiplier {
+			if symbolNumbers.Symbol.Char == '*' && len(symbolNumbers.Numbers) == 2 {
+				sum += symbolNumbers.Numbers[0].Value * symbolNumbers.Numbers[1].Value
+			}
+		} else {
+			for _, number := range symbolNumbers.Numbers {
+				sum += number.Value
+			}
 		}
 	}
 
