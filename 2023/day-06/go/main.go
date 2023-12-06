@@ -9,8 +9,13 @@ import (
 )
 
 func main() {
+	races()
+	race()
+}
+
+func races() {
 	file := filepath.Join("..", "assets", "race.txt")
-	race, err := U.ReadFileLineByLine(file, GetRaceConditions)
+	race, err := U.ReadFileLineByLine(file, GetRacesConditions)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
@@ -20,7 +25,18 @@ func main() {
 	fmt.Printf("Total winning combinations: %v\n", totalWinningCombinations)
 }
 
-func GetRaceConditions(line string) (conditions []int) {
+func race() {
+	file := filepath.Join("..", "assets", "race.txt")
+	newRace, err := U.ReadFileLineByLine(file, GetRaceCondition)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+
+	winningScenarios := GetRaceWinningScenarios([]int{newRace[0]}, []int{newRace[1]})
+	fmt.Printf("Total winning scenarios: %v\n", winningScenarios[0])
+}
+
+func GetRacesConditions(line string) (conditions []int) {
 	data := strings.Split(line, ":")
 	data = strings.Split(strings.TrimSpace(data[1]), " ")
 	data = U.RemoveEmptyStrings(data)
@@ -30,6 +46,13 @@ func GetRaceConditions(line string) (conditions []int) {
 	}
 
 	return conditions
+}
+
+func GetRaceCondition(line string) (condition int) {
+	data := strings.Split(line, ":")
+	raceCondition := strings.ReplaceAll(data[1], " ", "")
+
+	return U.Atoi(raceCondition)
 }
 
 func GetRaceWinningScenarios(durations, distances []int) (scenarios []int) {
@@ -50,8 +73,6 @@ func GetRaceWinningScenarios(durations, distances []int) (scenarios []int) {
 		}
 
 	}
-
-	fmt.Printf("Scenarios: %v\n", scenarios)
 
 	return scenarios
 }
