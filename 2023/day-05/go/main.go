@@ -11,6 +11,11 @@ import (
 	"strings"
 )
 
+type SeedsRangeMaps struct {
+	SeedsRange []int
+	Maps       []Map
+}
+
 type Map struct {
 	Source      string
 	Destination string
@@ -24,7 +29,7 @@ type MapConvertion struct {
 }
 
 func main() {
-	file := filepath.Join("..", "assets", "seeds_map_test.txt")
+	file := filepath.Join("..", "assets", "seeds_map.txt")
 	lines, err := ReadFile(file, func(line string) string {
 		return line
 	})
@@ -32,6 +37,11 @@ func main() {
 		log.Fatalf("Error reading file: %v", err)
 	}
 
+	seeds, maps := MapSeedsMap(lines)
+	seedsRange := GetSeedsRange(seeds)
+}
+
+func Part1(lines []string) {
 	seeds, maps := MapSeedsMap(lines)
 
 	locations := WalkMapConvertions(seeds, maps)
@@ -137,4 +147,17 @@ func WalkMapConvertions(seeds []int, maps []Map) (locations []int) {
 	}
 
 	return locations
+}
+
+func GetSeedsRange(seeds []int) (ranges [][]int) {
+	for i, seed := range seeds {
+		if i%2 == 1 {
+			initialValue := seeds[i-1]
+			finalValue := seeds[i-1] + seed - 1
+
+			ranges = append(ranges, []int{initialValue, finalValue})
+		}
+	}
+
+	return ranges
 }
