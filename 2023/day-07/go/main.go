@@ -10,9 +10,14 @@ import (
 )
 
 const (
-	CARD_INITIAL_VALUE = 2
-	CARD_VALUES_AMOUNT = 13
+	CARD_VALUES_AMOUNT = 15
 )
+
+type Game struct {
+	Hands         []Hand
+	TotalBidding  int
+	UseJokerRules bool
+}
 
 type HandCombination uint8
 
@@ -32,52 +37,35 @@ type Hand struct {
 	Power []int
 }
 
-func main() {
+func (g *Game) ReadGameFile() {
 	file := filepath.Join("..", "assets", "cards.txt")
-	hands, err := U.ReadFileLineByLine(file, ParseLineHand)
+	hands, err := U.ReadFileLineByLine(file, g.ParseGameLine)
 	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
 	}
 
-	OrderHands(hands)
-	totalBidding := GetTotalBidding(hands)
-	fmt.Printf("Total bidding: %v\n", totalBidding)
+	g.Hands = hands
 }
 
-func ParseLineHand(line string) Hand {
+func (g Game) ParseGameLine(line string) Hand {
 	hand := strings.Split(line, " ")
 
-	power := GetHandPower(hand[0])
-
 	return Hand{
-		hand[0],
-		U.Atoi(hand[1]),
-		power,
+		Hand: hand[0],
+		Bid:  U.Atoi(hand[1]),
 	}
 }
 
-func GetHandPower(hand string) (power []int) {
-	duplicates := make([]int, CARD_VALUES_AMOUNT)
-
-	for _, card := range hand {
-		cardValue := GetCardValue(string(card))
-		power = append(power, cardValue)
-
-		duplicates[cardValue-CARD_INITIAL_VALUE]++
-	}
-
-	handCombination := GetHandCombination(duplicates)
-	power = append([]int{int(handCombination)}, power...)
-
-	return power
-}
-
-func GetCardValue(card string) int {
+func (g Game) GetCardValue(card string) int {
 	switch card {
 	case "T":
 		return 10
 	case "J":
-		return 11
+		if g.UseJokerRules {
+			return 1
+		} else {
+			return 11
+		}
 	case "Q":
 		return 12
 	case "K":
@@ -89,7 +77,36 @@ func GetCardValue(card string) int {
 	}
 }
 
-func GetHandCombination(duplicates []int) HandCombination {
+func (g *Game) CalculateHandsPower() {
+	for i, hand := range g.Hands {
+		g.Hands[i].Power = hand.GetHandPower(g)
+	}
+}
+
+func (g *Game) OrderHands() {
+	sort.SliceStable(g.Hands, func(i, j int) bool {
+		if g.Hands[i].Power[0] != g.Hands[j].Power[0] {
+			return g.Hands[i].Power[0] < g.Hands[j].Power[0]
+
+		} else {
+			for k := 1; k < len(g.Hands[i].Power); k++ {
+				if g.Hands[i].Power[k] != g.Hands[j].Power[k] {
+					return g.Hands[i].Power[k] < g.Hands[j].Power[k]
+				}
+			}
+		}
+
+		return false
+	})
+}
+
+func (g *Game) GetTotalBidding() {
+	for i, hand := range g.Hands {
+		g.TotalBidding += hand.Bid * (i + 1)
+	}
+}
+
+func (h Hand) GetHandCombination(duplicates []int) HandCombination {
 	sort.Slice(duplicates, func(i, j int) bool {
 		return duplicates[i] > duplicates[j]
 	})
@@ -112,31 +129,51 @@ func GetHandCombination(duplicates []int) HandCombination {
 	}
 }
 
-func OrderHands(hands []Hand) []Hand {
-	sort.SliceStable(hands, func(i, j int) bool {
-		if hands[i].Power[0] != hands[j].Power[0] {
-			return hands[i].Power[0] < hands[j].Power[0]
+func (h Hand) GetHandPower(game *Game) (power []int) {
+	duplicates := make([]int, CARD_VALUES_AMOUNT)
+	var jokers int
 
+	for _, card := range h.Hand {
+		cardValue := game.GetCardValue(string(card))
+		power = append(power, cardValue)
+
+		if game.UseJokerRules && cardValue == 1 {
+			jokers++
 		} else {
-			for k := 1; k < len(hands[i].Power); k++ {
-				if hands[i].Power[k] != hands[j].Power[k] {
-					return hands[i].Power[k] < hands[j].Power[k]
-				}
+			duplicates[cardValue]++
+		}
+	}
+
+	if jokers > 0 {
+		highestDuplicate := 0
+		highestDuplicateIndex := 0
+		for i, value := range duplicates {
+			if value > highestDuplicate {
+				highestDuplicate = value
+				highestDuplicateIndex = i
 			}
 		}
 
-		return false
-	})
-
-	return hands
-}
-
-func GetTotalBidding(hands []Hand) int {
-	total := 0
-
-	for i, hand := range hands {
-		total += hand.Bid * (i + 1)
+		duplicates[highestDuplicateIndex] += jokers
 	}
 
-	return total
+	handCombination := h.GetHandCombination(duplicates)
+	power = append([]int{int(handCombination)}, power...)
+
+	return power
+}
+
+func main() {
+	rules := []bool{false, true}
+	for _, rule := range rules {
+		game := Game{}
+		game.ReadGameFile()
+		game.UseJokerRules = rule
+
+		game.CalculateHandsPower()
+		game.OrderHands()
+
+		game.GetTotalBidding()
+		fmt.Printf("Using Joker rule: %v, Total bidding: %v\n", game.UseJokerRules, game.TotalBidding)
+	}
 }
