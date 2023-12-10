@@ -37,8 +37,7 @@ func main() {
 		log.Fatalf("Error reading file: %v", err)
 	}
 
-	seeds, maps := MapSeedsMap(lines)
-	seedsRange := GetSeedsRange(seeds)
+	Part1(lines)
 }
 
 func Part1(lines []string) {
@@ -147,17 +146,4 @@ func WalkMapConvertions(seeds []int, maps []Map) (locations []int) {
 	}
 
 	return locations
-}
-
-func GetSeedsRange(seeds []int) (ranges [][]int) {
-	for i, seed := range seeds {
-		if i%2 == 1 {
-			initialValue := seeds[i-1]
-			finalValue := seeds[i-1] + seed - 1
-
-			ranges = append(ranges, []int{initialValue, finalValue})
-		}
-	}
-
-	return ranges
 }
